@@ -28,11 +28,11 @@ export default function ProfileSettings({ onMenuClick }: ProfileSettingsProps) {
   })
 
   const [formData, setFormData] = useState({
-    email: "mfakharshah512@gmail.com",
-    username: "Fakhar7",
-    firstName: "Muhammad",
-    lastName: "Fakhar",
-    currentPassword: "28748817764f6",
+    email: "christopher@gmail.com",
+    username: "Christopher",
+    firstName: "Brown",
+    lastName: "Christopher",
+    currentPassword: "2874881776446",
     newPassword: "446816847",
     confirmPassword: "446816847",
   })
