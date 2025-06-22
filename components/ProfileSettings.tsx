@@ -128,7 +128,7 @@ export default function ProfileSettings({ onMenuClick }: ProfileSettingsProps) {
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
                   </div>
                   <div>
-                    <h4 className="text-lg font-medium text-gray-900">Fakhar7</h4>
+                    <h4 className="text-lg font-medium text-gray-900">Christopher</h4>
                     <p className="text-sm text-gray-500">Free</p>
                   </div>
                 </div>
