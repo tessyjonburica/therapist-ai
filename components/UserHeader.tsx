@@ -16,7 +16,7 @@ export default function UserHeader() {
         className="flex items-center space-x-2 hover:bg-gray-100 h-9 sm:h-10 px-2 sm:px-3"
       >
         <span className="text-xs sm:text-sm font-medium text-gray-700 hidden xs:block truncate max-w-[80px] sm:max-w-none">
-          Hi, Fakhar7!
+          Hi, Christopher!
         </span>
         <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
           <span className="text-white text-sm font-medium">F</span>

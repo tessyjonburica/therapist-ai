@@ -123,7 +123,7 @@ export default function ProfileSettings({ onMenuClick }: ProfileSettingsProps) {
                 <div className="flex items-center space-x-6 mb-6">
                   <div className="relative">
                     <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-2xl font-medium">F</span>
+                      <span className="text-white text-2xl font-medium">C</span>
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
                   </div>
