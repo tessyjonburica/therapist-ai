@@ -250,7 +250,7 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-lg">{activeChat?.title}</h3>
-                <p className="text-sm text-gray-500">Online now</p>
+                <p className="text-sm text-gray-500">Online</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
