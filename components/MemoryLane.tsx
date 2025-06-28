@@ -183,7 +183,7 @@ export default function MemoryLane({ onMenuClick }: MemoryLaneProps) {
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white shadow-sm">
-        <TopNavbar title="Memory Lane" onMenuClick={onMenuClick} />
+        <TopNavbar title="" onMenuClick={onMenuClick} />
       </div>
 
       {/* Desktop Filters - Original Layout */}

@@ -218,7 +218,7 @@ export default function ExploreLoveThemes({ onMenuClick }: ExploreLoveThemesProp
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <TopNavbar title="Explore Love Themes" onMenuClick={onMenuClick} />
+      <TopNavbar title="" onMenuClick={onMenuClick} />
 
       {/* Desktop Layout - Original */}
       <div className="hidden lg:block">

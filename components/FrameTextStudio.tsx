@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import TopNavbar from "./TopNavbar"
 
 interface FrameTextStudioProps {
@@ -24,6 +25,7 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
   const [selectedBackground, setSelectedBackground] = useState("transparent")
   const [selectedShape, setSelectedShape] = useState("rounded")
   const [selectedBorderEmoji, setSelectedBorderEmoji] = useState("❤️")
+  const [showBorderEmojis, setShowBorderEmojis] = useState(true)
   const [activeTab, setActiveTab] = useState("colors")
   const [isShareOpen, setIsShareOpen] = useState(false)
 
@@ -140,6 +142,33 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
       bgClass: "bg-gradient-to-br from-blue-400 to-teal-600",
       name: "Ocean Gradient",
     },
+    // New Pattern Backgrounds
+    {
+      id: "pattern-dots",
+      color: "bg-white",
+      bgClass: "bg-white",
+      name: "Polka Dots",
+      pattern:
+        "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 3px, transparent 3px), radial-gradient(circle at 80% 50%, rgba(255, 119, 198, 0.3) 3px, transparent 3px)",
+      patternSize: "20px 20px",
+    },
+    {
+      id: "pattern-hearts",
+      color: "bg-pink-50",
+      bgClass: "bg-pink-50",
+      name: "Hearts",
+      pattern: "radial-gradient(circle at 50% 50%, rgba(255, 182, 193, 0.4) 2px, transparent 2px)",
+      patternSize: "25px 25px",
+    },
+    {
+      id: "pattern-waves",
+      color: "bg-blue-50",
+      bgClass: "bg-blue-50",
+      name: "Waves",
+      pattern:
+        "linear-gradient(45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(59, 130, 246, 0.1) 75%), linear-gradient(-45deg, transparent 75%, rgba(59, 130, 246, 0.1) 75%)",
+      patternSize: "30px 30px",
+    },
   ]
 
   const shapeOptions = [
@@ -186,6 +215,18 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
   const getSelectedBackground = () => {
     const bg = backgroundOptions.find((b) => b.id === selectedBackground)
     return bg?.bgClass || "bg-transparent"
+  }
+
+  const getSelectedBackgroundStyle = () => {
+    const bg = backgroundOptions.find((b) => b.id === selectedBackground)
+    if (bg?.pattern) {
+      return {
+        backgroundImage: bg.pattern,
+        backgroundSize: bg.patternSize,
+        backgroundRepeat: "repeat",
+      }
+    }
+    return {}
   }
 
   const getSelectedShape = () => {
@@ -253,420 +294,161 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white shadow-sm">
-        <TopNavbar title="Live Preview" showNewButton={true} newButtonText="New Message" onMenuClick={onMenuClick} />
+      <div className="sticky top-0 z-50 bg-white shadow-sm flex-shrink-0">
+        <TopNavbar title="" showNewButton={true} newButtonText="New Message" onMenuClick={onMenuClick} />
       </div>
 
-      {/* Desktop Layout - Original */}
-      <div className="hidden lg:flex flex-1">
+      {/* Desktop Layout - Enhanced with Scrolling */}
+      <div className="hidden lg:flex flex-1 min-h-0">
         {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium text-gray-900">FrameText Studio</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save
-                </Button>
-                <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white border-0" size="sm">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Share
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-gray-900">FrameText Studio</h3>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Share Your Message</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-4 py-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleShare("copy")}
-                        className="flex items-center space-x-2"
-                      >
-                        <Copy className="w-4 h-4" />
-                        <span>Copy Text</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleShare("download")}
-                        className="flex items-center space-x-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>Download</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleShare("facebook")}
-                        className="flex items-center space-x-2 text-blue-600"
-                      >
-                        <Facebook className="w-4 h-4" />
-                        <span>Facebook</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleShare("twitter")}
-                        className="flex items-center space-x-2 text-blue-400"
-                      >
-                        <Twitter className="w-4 h-4" />
-                        <span>Twitter</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleShare("instagram")}
-                        className="flex items-center space-x-2 text-pink-600 col-span-2"
-                      >
-                        <Instagram className="w-4 h-4" />
-                        <span>Copy for Instagram</span>
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-
-            {/* Preview */}
-            <div className="bg-gray-50 rounded-lg p-8 mb-6 flex items-center justify-center min-h-[300px]">
-              <motion.div
-                key={`${selectedFont}-${selectedSize}-${selectedTextColor}-${selectedBackground}-${selectedShape}-${selectedMood}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`text-center max-w-md p-6 ${getSelectedTextColor()} ${getSelectedBackground()} ${getSelectedShape()} relative shadow-lg`}
-                style={{
-                  fontFamily: selectedFont,
-                  fontSize: `${selectedSize}px`,
-                  lineHeight: 1.5,
-                }}
-              >
-                {/* Border Emojis */}
-                <div className="absolute -top-2 -left-2 text-lg">{selectedBorderEmoji}</div>
-                <div className="absolute -top-2 -right-2 text-lg">{selectedBorderEmoji}</div>
-                <div className="absolute -bottom-2 -left-2 text-lg">{selectedBorderEmoji}</div>
-                <div className="absolute -bottom-2 -right-2 text-lg">{selectedBorderEmoji}</div>
-
-                {message}
-              </motion.div>
-            </div>
-
-            {/* Message Input */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                  rows={3}
-                  placeholder="Type your message here..."
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Customization Panel */}
-        <div className="w-80 bg-white border-l border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Customize Your Message</h3>
-
-          {/* Mood Selection */}
-          <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Mood</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {moodOptions.map((mood) => (
-                <button
-                  key={mood.id}
-                  onClick={() => handleMoodChange(mood.id)}
-                  className={`p-2 rounded-lg text-xs font-medium transition-colors border ${
-                    selectedMood === mood.id
-                      ? mood.color + " ring-2 ring-offset-2 ring-pink-500"
-                      : mood.color + " hover:opacity-80"
-                  }`}
-                >
-                  {mood.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Font Style */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
-            <Select value={selectedFont} onValueChange={setSelectedFont}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Nunito">Nunito</SelectItem>
-                <SelectItem value="Sans serif">Sans serif</SelectItem>
-                <SelectItem value="Arial">Arial</SelectItem>
-                <SelectItem value="Poppins">Poppins</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Font Size */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
-            <Select value={selectedSize} onValueChange={setSelectedSize}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {fontSizeOptions.map((size) => (
-                  <SelectItem key={size} value={size}>
-                    {size}px
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Colors, Background, Shape Tabs */}
-          <div className="mb-6">
-            <div className="flex space-x-4 mb-4 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab("colors")}
-                className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
-                  activeTab === "colors"
-                    ? "border-pink-500 text-pink-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Colors
-              </button>
-              <button
-                onClick={() => setActiveTab("background")}
-                className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
-                  activeTab === "background"
-                    ? "border-pink-500 text-pink-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Background
-              </button>
-              <button
-                onClick={() => setActiveTab("shape")}
-                className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
-                  activeTab === "shape"
-                    ? "border-pink-500 text-pink-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Shape
-              </button>
-            </div>
-
-            {/* Colors Tab */}
-            {activeTab === "colors" && (
-              <div className="grid grid-cols-5 gap-2">
-                {textColorOptions.map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => setSelectedTextColor(color.id)}
-                    className={`w-12 h-12 rounded-full ${color.color} ${
-                      selectedTextColor === color.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
-                    }`}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Background Tab */}
-            {activeTab === "background" && (
-              <div className="grid grid-cols-4 gap-2">
-                {backgroundOptions.map((bg) => (
-                  <button
-                    key={bg.id}
-                    onClick={() => setSelectedBackground(bg.id)}
-                    className={`w-12 h-12 rounded ${bg.color} ${
-                      selectedBackground === bg.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
-                    }`}
-                    title={bg.name}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Shape Tab */}
-            {activeTab === "shape" && (
-              <div className="grid grid-cols-4 gap-2">
-                {shapeOptions.map((shape) => (
-                  <button
-                    key={shape.id}
-                    onClick={() => setSelectedShape(shape.id)}
-                    className={`w-12 h-12 border-2 ${shape.shape} ${
-                      selectedShape === shape.id
-                        ? "border-pink-500 bg-pink-100"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    title={shape.name}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Border Emoji */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Border Emoji</h4>
-            <div className="grid grid-cols-8 gap-2">
-              {emojiOptions.map((emoji, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedBorderEmoji(emoji)}
-                  className={`w-8 h-8 text-lg rounded flex items-center justify-center ${
-                    selectedBorderEmoji === emoji ? "bg-pink-100 ring-2 ring-pink-500" : "hover:bg-gray-100"
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Layout - New Optimized */}
-      <div className="lg:hidden flex flex-col h-full">
-        {/* Sub Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 sticky top-[73px] z-40">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900">FrameText Studio</h3>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" className="text-sm">
-                <Save className="w-4 h-4 mr-1" />
-                Save
-              </Button>
-              <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-500 hover:bg-blue-600 text-white border-0" size="sm">
-                    <Share2 className="w-4 h-4 mr-1" />
-                    Share
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Share Your Message</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4 py-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShare("copy")}
-                      className="flex items-center space-x-2"
-                    >
-                      <Copy className="w-4 h-4" />
-                      <span>Copy Text</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShare("download")}
-                      className="flex items-center space-x-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Download</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShare("facebook")}
-                      className="flex items-center space-x-2 text-blue-600"
-                    >
-                      <Facebook className="w-4 h-4" />
-                      <span>Facebook</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShare("twitter")}
-                      className="flex items-center space-x-2 text-blue-400"
-                    >
-                      <Twitter className="w-4 h-4" />
-                      <span>Twitter</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShare("instagram")}
-                      className="flex items-center space-x-2 text-pink-600 col-span-2"
-                    >
-                      <Instagram className="w-4 h-4" />
-                      <span>Copy for Instagram</span>
-                    </Button>
+                    <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-blue-500 hover:bg-blue-600 text-white border-0" size="sm">
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Share Your Message</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-2 gap-4 py-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShare("copy")}
+                            className="flex items-center space-x-2"
+                          >
+                            <Copy className="w-4 h-4" />
+                            <span>Copy Text</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShare("download")}
+                            className="flex items-center space-x-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Download</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShare("facebook")}
+                            className="flex items-center space-x-2 text-blue-600"
+                          >
+                            <Facebook className="w-4 h-4" />
+                            <span>Facebook</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShare("twitter")}
+                            className="flex items-center space-x-2 text-blue-400"
+                          >
+                            <Twitter className="w-4 h-4" />
+                            <span>Twitter</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShare("instagram")}
+                            className="flex items-center space-x-2 text-pink-600 col-span-2"
+                          >
+                            <Instagram className="w-4 h-4" />
+                            <span>Copy for Instagram</span>
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </div>
+                </div>
 
-        {/* Live Preview */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center min-h-[220px]">
-          <motion.div
-            key={`${selectedFont}-${selectedSize}-${selectedTextColor}-${selectedBackground}-${selectedShape}-${selectedMood}`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`text-center max-w-xs p-4 ${getSelectedTextColor()} ${getSelectedBackground()} ${getSelectedShape()} relative shadow-lg`}
-            style={{
-              fontFamily: selectedFont,
-              fontSize: `${selectedSize}px`,
-              lineHeight: 1.4,
-            }}
-          >
-            {/* Border Emojis */}
-            <div className="absolute -top-1 -left-1 text-sm">{selectedBorderEmoji}</div>
-            <div className="absolute -top-1 -right-1 text-sm">{selectedBorderEmoji}</div>
-            <div className="absolute -bottom-1 -left-1 text-sm">{selectedBorderEmoji}</div>
-            <div className="absolute -bottom-1 -right-1 text-sm">{selectedBorderEmoji}</div>
-            {message}
-          </motion.div>
-        </div>
-
-        {/* Message Input */}
-        <div className="bg-white border-b border-gray-200 p-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="w-full resize-none"
-              rows={3}
-              placeholder="Type here!"
-            />
-            <button className="mt-2 p-2 text-gray-400 hover:text-gray-600">
-              <Upload className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Customization */}
-        <div className="flex-1 overflow-y-auto bg-white pb-6">
-          <div className="p-4">
-            <h4 className="text-base font-medium text-gray-900 mb-4">Customize Your Message</h4>
-
-            {/* Mood Selection */}
-            <div className="mb-6">
-              <h5 className="text-sm font-medium text-gray-700 mb-3">Mood</h5>
-              <div className="flex flex-wrap gap-2">
-                {moodOptions.map((mood) => (
-                  <button
-                    key={mood.id}
-                    onClick={() => handleMoodChange(mood.id)}
-                    className={`px-3 py-2 rounded-full text-sm font-medium transition-colors border ${
-                      selectedMood === mood.id
-                        ? mood.color + " ring-2 ring-offset-2 ring-pink-500"
-                        : mood.color + " hover:opacity-80"
-                    }`}
+                {/* Preview */}
+                <div className="bg-gray-50 rounded-lg p-8 mb-6 flex items-center justify-center min-h-[300px]">
+                  <motion.div
+                    key={`${selectedFont}-${selectedSize}-${selectedTextColor}-${selectedBackground}-${selectedShape}-${selectedMood}-${showBorderEmojis}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className={`text-center max-w-md p-6 ${getSelectedTextColor()} ${getSelectedBackground()} ${getSelectedShape()} relative shadow-lg`}
+                    style={{
+                      fontFamily: selectedFont,
+                      fontSize: `${selectedSize}px`,
+                      lineHeight: 1.5,
+                      ...getSelectedBackgroundStyle(),
+                    }}
                   >
-                    {mood.label}
-                  </button>
-                ))}
+                    {/* Border Emojis */}
+                    {showBorderEmojis && (
+                      <>
+                        <div className="absolute -top-2 -left-2 text-lg">{selectedBorderEmoji}</div>
+                        <div className="absolute -top-2 -right-2 text-lg">{selectedBorderEmoji}</div>
+                        <div className="absolute -bottom-2 -left-2 text-lg">{selectedBorderEmoji}</div>
+                        <div className="absolute -bottom-2 -right-2 text-lg">{selectedBorderEmoji}</div>
+                      </>
+                    )}
+
+                    {message}
+                  </motion.div>
+                </div>
+
+                {/* Message Input */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                      rows={3}
+                      placeholder="Type your message here..."
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Font Controls */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Customization Panel - Enhanced with Independent Scrolling */}
+        <div className="w-80 bg-white border-l border-gray-200 flex flex-col min-h-0">
+          {/* Fixed Header */}
+          <div className="flex-shrink-0 p-6 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">Customize Your Message</h3>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6 space-y-6">
+              {/* Mood Selection */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Mood</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {moodOptions.map((mood) => (
+                    <button
+                      key={mood.id}
+                      onClick={() => handleMoodChange(mood.id)}
+                      className={`p-2 rounded-lg text-xs font-medium transition-colors border ${
+                        selectedMood === mood.id
+                          ? mood.color + " ring-2 ring-offset-2 ring-pink-500"
+                          : mood.color + " hover:opacity-80"
+                      }`}
+                    >
+                      {mood.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Style */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
                 <Select value={selectedFont} onValueChange={setSelectedFont}>
@@ -681,6 +463,8 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Font Size */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
                 <Select value={selectedSize} onValueChange={setSelectedSize}>
@@ -690,99 +474,353 @@ export default function FrameTextStudio({ onMenuClick }: FrameTextStudioProps) {
                   <SelectContent>
                     {fontSizeOptions.map((size) => (
                       <SelectItem key={size} value={size}>
-                        {size}
+                        {size}px
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="mb-4">
-              <div className="flex space-x-4 border-b border-gray-200">
-                {["Colors", "Background", "Shape"].map((tab) => (
+              {/* Colors, Background, Shape Tabs */}
+              <div>
+                <div className="flex space-x-4 mb-4 border-b border-gray-200">
                   <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab.toLowerCase())}
+                    onClick={() => setActiveTab("colors")}
                     className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
-                      activeTab === tab.toLowerCase()
+                      activeTab === "colors"
                         ? "border-pink-500 text-pink-600"
-                        : "border-transparent text-gray-500"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
                     }`}
                   >
-                    {tab}
+                    Colors
                   </button>
-                ))}
+                  <button
+                    onClick={() => setActiveTab("background")}
+                    className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
+                      activeTab === "background"
+                        ? "border-pink-500 text-pink-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Background
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("shape")}
+                    className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
+                      activeTab === "shape"
+                        ? "border-pink-500 text-pink-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Shape
+                  </button>
+                </div>
+
+                {/* Colors Tab */}
+                {activeTab === "colors" && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {textColorOptions.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => setSelectedTextColor(color.id)}
+                        className={`w-12 h-12 rounded-full ${color.color} ${
+                          selectedTextColor === color.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
+                        }`}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Background Tab */}
+                {activeTab === "background" && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {backgroundOptions.map((bg) => (
+                      <button
+                        key={bg.id}
+                        onClick={() => setSelectedBackground(bg.id)}
+                        className={`w-12 h-12 rounded ${bg.color} ${
+                          selectedBackground === bg.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
+                        }`}
+                        style={
+                          bg.pattern
+                            ? {
+                                backgroundImage: bg.pattern,
+                                backgroundSize: bg.patternSize,
+                                backgroundRepeat: "repeat",
+                              }
+                            : {}
+                        }
+                        title={bg.name}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Shape Tab */}
+                {activeTab === "shape" && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {shapeOptions.map((shape) => (
+                      <button
+                        key={shape.id}
+                        onClick={() => setSelectedShape(shape.id)}
+                        className={`w-12 h-12 border-2 ${shape.shape} ${
+                          selectedShape === shape.id
+                            ? "border-pink-500 bg-pink-100"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                        title={shape.name}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
+
+              {/* Border Emoji Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700">Border Emojis</h4>
+                  <p className="text-xs text-gray-500">Show decorative emojis around the message</p>
+                </div>
+                <Switch checked={showBorderEmojis} onCheckedChange={setShowBorderEmojis} />
+              </div>
+
+              {/* Border Emoji Selection */}
+              {showBorderEmojis && (
+                <div className="pb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Border Emoji</h4>
+                  <div className="grid grid-cols-8 gap-2">
+                    {emojiOptions.map((emoji, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedBorderEmoji(emoji)}
+                        className={`w-8 h-8 text-lg rounded flex items-center justify-center ${
+                          selectedBorderEmoji === emoji ? "bg-pink-100 ring-2 ring-pink-500" : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Colors Tab */}
-            {activeTab === "colors" && (
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {textColorOptions.slice(0, 10).map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => setSelectedTextColor(color.id)}
-                    className={`w-12 h-12 rounded-full ${color.color} ${
-                      selectedTextColor === color.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
-                    }`}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            )}
+      {/* Mobile Layout - Enhanced with Scrolling */}
+      <div className="lg:hidden flex flex-col flex-1 min-h-0">
+        {/* Scrollable Mobile Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Live Preview */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center min-h-[220px] flex-shrink-0">
+            <motion.div
+              key={`${selectedFont}-${selectedSize}-${selectedTextColor}-${selectedBackground}-${selectedShape}-${selectedMood}-${showBorderEmojis}`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`text-center max-w-xs p-4 ${getSelectedTextColor()} ${getSelectedBackground()} ${getSelectedShape()} relative shadow-lg`}
+              style={{
+                fontFamily: selectedFont,
+                fontSize: `${selectedSize}px`,
+                lineHeight: 1.4,
+                ...getSelectedBackgroundStyle(),
+              }}
+            >
+              {/* Border Emojis */}
+              {showBorderEmojis && (
+                <>
+                  <div className="absolute -top-1 -left-1 text-sm">{selectedBorderEmoji}</div>
+                  <div className="absolute -top-1 -right-1 text-sm">{selectedBorderEmoji}</div>
+                  <div className="absolute -bottom-1 -left-1 text-sm">{selectedBorderEmoji}</div>
+                  <div className="absolute -bottom-1 -right-1 text-sm">{selectedBorderEmoji}</div>
+                </>
+              )}
+              {message}
+            </motion.div>
+          </div>
 
-            {/* Background Tab */}
-            {activeTab === "background" && (
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {backgroundOptions.slice(0, 12).map((bg) => (
-                  <button
-                    key={bg.id}
-                    onClick={() => setSelectedBackground(bg.id)}
-                    className={`w-12 h-12 rounded ${bg.color} ${
-                      selectedBackground === bg.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
-                    }`}
-                    title={bg.name}
-                  />
-                ))}
-              </div>
-            )}
+          {/* Message Input */}
+          <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full resize-none"
+                rows={3}
+                placeholder="Type here!"
+              />
+              <button className="mt-2 p-2 text-gray-400 hover:text-gray-600">
+                <Upload className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
 
-            {/* Shape Tab */}
-            {activeTab === "shape" && (
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {shapeOptions.map((shape) => (
-                  <button
-                    key={shape.id}
-                    onClick={() => setSelectedShape(shape.id)}
-                    className={`w-12 h-12 border-2 ${shape.shape} ${
-                      selectedShape === shape.id
-                        ? "border-pink-500 bg-pink-100"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    title={shape.name}
-                  />
-                ))}
-              </div>
-            )}
+          {/* Customization */}
+          <div className="bg-white pb-8">
+            <div className="p-4">
+              <h4 className="text-base font-medium text-gray-900 mb-4">Customize Your Message</h4>
 
-            {/* Border Emoji */}
-            <div className="pb-4">
-              <h5 className="text-sm font-medium text-gray-700 mb-3">Border Emoji</h5>
-              <div className="grid grid-cols-8 gap-2">
-                {emojiOptions.map((emoji, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedBorderEmoji(emoji)}
-                    className={`w-10 h-10 text-lg rounded flex items-center justify-center ${
-                      selectedBorderEmoji === emoji ? "bg-pink-100 ring-2 ring-pink-500" : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+              {/* Mood Selection */}
+              <div className="mb-6">
+                <h5 className="text-sm font-medium text-gray-700 mb-3">Mood</h5>
+                <div className="flex flex-wrap gap-2">
+                  {moodOptions.map((mood) => (
+                    <button
+                      key={mood.id}
+                      onClick={() => handleMoodChange(mood.id)}
+                      className={`px-3 py-2 rounded-full text-sm font-medium transition-colors border ${
+                        selectedMood === mood.id
+                          ? mood.color + " ring-2 ring-offset-2 ring-pink-500"
+                          : mood.color + " hover:opacity-80"
+                      }`}
+                    >
+                      {mood.label}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Font Controls */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
+                  <Select value={selectedFont} onValueChange={setSelectedFont}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Nunito">Nunito</SelectItem>
+                      <SelectItem value="Sans serif">Sans serif</SelectItem>
+                      <SelectItem value="Arial">Arial</SelectItem>
+                      <SelectItem value="Poppins">Poppins</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+                  <Select value={selectedSize} onValueChange={setSelectedSize}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontSizeOptions.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="mb-4">
+                <div className="flex space-x-4 border-b border-gray-200">
+                  {["Colors", "Background", "Shape"].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab.toLowerCase())}
+                      className={`pb-2 border-b-2 text-sm font-medium transition-colors ${
+                        activeTab === tab.toLowerCase()
+                          ? "border-pink-500 text-pink-600"
+                          : "border-transparent text-gray-500"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colors Tab */}
+              {activeTab === "colors" && (
+                <div className="grid grid-cols-5 gap-3 mb-6">
+                  {textColorOptions.slice(0, 10).map((color) => (
+                    <button
+                      key={color.id}
+                      onClick={() => setSelectedTextColor(color.id)}
+                      className={`w-12 h-12 rounded-full ${color.color} ${
+                        selectedTextColor === color.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
+                      }`}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Background Tab */}
+              {activeTab === "background" && (
+                <div className="grid grid-cols-4 gap-3 mb-6">
+                  {backgroundOptions.slice(0, 15).map((bg) => (
+                    <button
+                      key={bg.id}
+                      onClick={() => setSelectedBackground(bg.id)}
+                      className={`w-12 h-12 rounded ${bg.color} ${
+                        selectedBackground === bg.id ? "ring-2 ring-offset-2 ring-gray-400" : ""
+                      }`}
+                      style={
+                        bg.pattern
+                          ? {
+                              backgroundImage: bg.pattern,
+                              backgroundSize: bg.patternSize,
+                              backgroundRepeat: "repeat",
+                            }
+                          : {}
+                      }
+                      title={bg.name}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Shape Tab */}
+              {activeTab === "shape" && (
+                <div className="grid grid-cols-4 gap-3 mb-6">
+                  {shapeOptions.map((shape) => (
+                    <button
+                      key={shape.id}
+                      onClick={() => setSelectedShape(shape.id)}
+                      className={`w-12 h-12 border-2 ${shape.shape} ${
+                        selectedShape === shape.id
+                          ? "border-pink-500 bg-pink-100"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                      title={shape.name}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Border Emoji Toggle */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h5 className="text-sm font-medium text-gray-700">Border Emojis</h5>
+                  <p className="text-xs text-gray-500">Show decorative emojis</p>
+                </div>
+                <Switch checked={showBorderEmojis} onCheckedChange={setShowBorderEmojis} />
+              </div>
+
+              {/* Border Emoji Selection */}
+              {showBorderEmojis && (
+                <div className="pb-4">
+                  <h5 className="text-sm font-medium text-gray-700 mb-3">Border Emoji</h5>
+                  <div className="grid grid-cols-8 gap-2">
+                    {emojiOptions.map((emoji, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedBorderEmoji(emoji)}
+                        className={`w-10 h-10 text-lg rounded flex items-center justify-center ${
+                          selectedBorderEmoji === emoji ? "bg-pink-100 ring-2 ring-pink-500" : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

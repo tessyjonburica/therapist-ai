@@ -192,7 +192,7 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       <TopNavbar
-        title="Chat"
+        title=""
         showNewButton={true}
         onNewClick={createNewChat}
         newButtonText="New Chat"
@@ -250,7 +250,7 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-lg">{activeChat?.title}</h3>
-                <p className="text-sm text-gray-500">Online</p>
+                <p className="text-sm text-gray-500">Online now</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">

@@ -37,11 +37,10 @@ export default function TopNavbar({
             {/* Logo Section */}
             <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
               <div className="flex-shrink-0">
-                <img
-                  src="/images/valentino-logo-mobile.png"
-                  alt="Valentino AI - Your personal relationship guide"
-                  className="h-8 sm:h-10 w-auto object-contain"
-                />
+                <div className="flex flex-col">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight">VALENTINO AI</h1>
+                  <p className="text-xs sm:text-sm text-gray-600 leading-tight -mt-1">your personal AI therapist</p>
+                </div>
               </div>
             </div>
           </div>
