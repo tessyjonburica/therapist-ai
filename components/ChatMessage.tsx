@@ -59,7 +59,7 @@ export default function ChatMessage({ message, onOptionClick }: ChatMessageProps
 
         {message.type === "user" && (
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-sm font-medium">U</span>
+            <span className="text-white text-sm font-medium">C</span>
           </div>
         )}
 
