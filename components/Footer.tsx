@@ -32,7 +32,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-xs text-gray-500">
-            <p>© 2024 Valentino AI. All rights reserved.</p>
+            <p>© 2025 Valentino AI. All rights reserved.</p>
             <p className="mt-1">Empowering relationships through AI-powered guidance</p>
           </div>
         </div>
