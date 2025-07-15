@@ -148,7 +148,7 @@ export default function Sidebar({ activeView, setActiveView, isMobileOpen, setIs
               <div className="p-4 border-t border-gray-100 bg-gray-50">
                 <div className="text-center">
                   <p className="text-xs text-gray-500">Version 1.0.0</p>
-                  <p className="text-xs text-gray-400 mt-1">© 2024 Valentino AI</p>
+                  <p className="text-xs text-gray-400 mt-1">© 2025 Valentino AI</p>
                 </div>
               </div>
             </motion.div>
