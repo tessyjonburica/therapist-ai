@@ -7,32 +7,71 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatMessage from "./ChatMessage"
 import TopNavbar from "./TopNavbar"
-
-interface Message {
-  id: string
-  type: "ai" | "user" | "options"
-  content: string
-  timestamp: Date
-  options?: string[]
-  isTyping?: boolean
-}
-
-interface Chat {
-  id: string
-  title: string
-  messages: Message[]
-  createdAt: Date
-}
+import { callGemini, generateChatTitle } from "@/lib/openai"
+import { saveChatsToStorage, loadChatsFromStorage, saveSingleChat, deleteChatFromStorage, Message, Chat } from "@/lib/storage"
 
 interface ChatInterfaceProps {
   onMenuClick?: () => void
 }
 
 export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
-  const [chats, setChats] = useState<Chat[]>([
+  const [chats, setChats] = useState<Chat[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [activeChatId, setActiveChatId] = useState("")
+  const [inputValue, setInputValue] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+
+  const activeChat = chats.find((chat) => chat.id === activeChatId)
+
+  // Load chats from localStorage on component mount
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const savedChats = loadChatsFromStorage()
+        
+        if (savedChats.length > 0) {
+          setChats(savedChats)
+          setActiveChatId(savedChats[0].id)
+        } else {
+          // Create initial chat if no saved chats
+          const initialChat: Chat = {
+            id: Date.now().toString(),
+            title: "Therapy Session",
+            createdAt: new Date(),
+            messages: [
     {
       id: "1",
-      title: "AI Therapist Chat",
+                type: "ai",
+                content: "Hello there! How are you feeling today?",
+                timestamp: new Date(),
+              },
+              {
+                id: "2",
+                type: "options",
+                content: "",
+                timestamp: new Date(),
+                options: [
+                  "😊 I'm feeling good and calm.",
+                  "😰 I'm a bit anxious or stressed.",
+                  "😔 I'm feeling down or low today.",
+                  "🤔 I'm not sure how I feel right now.",
+                ],
+              },
+            ],
+          }
+          setChats([initialChat])
+          setActiveChatId(initialChat.id)
+          saveChatsToStorage([initialChat])
+        }
+      } catch (error) {
+        console.error('Error loading chats:', error)
+        // Fallback to initial chat
+        const initialChat: Chat = {
+          id: Date.now().toString(),
+          title: "Therapy Session",
       createdAt: new Date(),
       messages: [
         {
@@ -54,16 +93,16 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
           ],
         },
       ],
-    },
-  ])
+        }
+        setChats([initialChat])
+        setActiveChatId(initialChat.id)
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-  const [activeChatId, setActiveChatId] = useState("1")
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
-
-  const activeChat = chats.find((chat) => chat.id === activeChatId)
+    loadChats()
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -73,10 +112,17 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
     scrollToBottom()
   }, [activeChat?.messages, isTyping])
 
-  const createNewChat = () => {
+  // Save chats to localStorage whenever they change
+  useEffect(() => {
+    if (chats.length > 0 && !isLoading) {
+      saveChatsToStorage(chats)
+    }
+  }, [chats, isLoading])
+
+  const createNewChat = async () => {
     const newChat: Chat = {
       id: Date.now().toString(),
-      title: `Chat ${chats.length + 1}`,
+      title: "New Session",
       createdAt: new Date(),
       messages: [
         {
@@ -95,8 +141,7 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
   const closeChat = (chatId: string) => {
     if (chats.length === 1) {
       // Don't close the last chat, just clear its messages
-      setChats((prev) =>
-        prev.map((chat) =>
+      const updatedChats = chats.map((chat) =>
           chat.id === chatId
             ? {
                 ...chat,
@@ -110,12 +155,14 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
                 ],
               }
             : chat,
-        ),
       )
+      setChats(updatedChats)
       return
     }
 
-    setChats((prev) => prev.filter((chat) => chat.id !== chatId))
+    const updatedChats = chats.filter((chat) => chat.id !== chatId)
+    setChats(updatedChats)
+    deleteChatFromStorage(chatId)
 
     // If we're closing the active chat, switch to another one
     if (chatId === activeChatId) {
@@ -126,67 +173,170 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
     }
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim() || !activeChat) return
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content: inputValue,
       timestamp: new Date(),
     }
 
-    setChats((prev) =>
-      prev.map((chat) => (chat.id === activeChatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat)),
+    // Add user message immediately
+    const updatedChats = chats.map((chat) => 
+      chat.id === activeChatId 
+        ? { ...chat, messages: [...chat.messages, userMessage] }
+        : chat
     )
+    setChats(updatedChats)
     setInputValue("")
-
-    // Simulate AI typing
     setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      const aiResponse: Message = {
+
+    try {
+      // Get AI response
+      const aiResponse = await callGemini(inputValue, activeChat.messages)
+      
+      const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content:
-          "Thank you for sharing that with me. I understand how you're feeling. Would you like to explore this further?",
+        content: aiResponse,
         timestamp: new Date(),
       }
-      setChats((prev) =>
-        prev.map((chat) => (chat.id === activeChatId ? { ...chat, messages: [...chat.messages, aiResponse] } : chat)),
+
+      // Add AI response
+      const finalChats = updatedChats.map((chat) =>
+        chat.id === activeChatId
+          ? { ...chat, messages: [...chat.messages, aiMessage] }
+          : chat
       )
-    }, 2000)
+      setChats(finalChats)
+
+      // Generate title for new chats (if this is the first user message)
+      if (activeChat.messages.length === 2) { // Only AI greeting + options
+        try {
+          const title = await generateChatTitle(inputValue)
+          const titledChats = finalChats.map((chat) =>
+            chat.id === activeChatId ? { ...chat, title } : chat
+          )
+          setChats(titledChats)
+        } catch (error) {
+          console.error('Error generating chat title:', error)
+        }
+      }
+    } catch (error) {
+      console.error('Error getting AI response:', error)
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "ai",
+        content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+        timestamp: new Date(),
+      }
+
+      const errorChats = updatedChats.map((chat) =>
+        chat.id === activeChatId
+          ? { ...chat, messages: [...chat.messages, errorMessage] }
+          : chat
+      )
+      setChats(errorChats)
+    } finally {
+      setIsTyping(false)
+    }
   }
 
-  const handleOptionClick = (option: string) => {
+  const handleOptionClick = async (option: string) => {
     if (!activeChat) return
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content: option,
       timestamp: new Date(),
     }
 
-    setChats((prev) =>
-      prev.map((chat) => (chat.id === activeChatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat)),
+    // Add user message immediately
+    const updatedChats = chats.map((chat) => 
+      chat.id === activeChatId 
+        ? { ...chat, messages: [...chat.messages, userMessage] }
+        : chat
     )
-
-    // Simulate AI typing response
+    setChats(updatedChats)
     setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      const aiResponse: Message = {
+
+    try {
+      // Get AI response
+      const aiResponse = await callGemini(option, activeChat.messages)
+      
+      const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content:
-          "I appreciate you sharing that with me. Let's explore this feeling together. What would you like to talk about?",
+        content: aiResponse,
         timestamp: new Date(),
       }
-      setChats((prev) =>
-        prev.map((chat) => (chat.id === activeChatId ? { ...chat, messages: [...chat.messages, aiResponse] } : chat)),
+
+      // Add AI response
+      const finalChats = updatedChats.map((chat) =>
+        chat.id === activeChatId
+          ? { ...chat, messages: [...chat.messages, aiMessage] }
+          : chat
       )
-    }, 1500)
+      setChats(finalChats)
+
+      // Generate title for new chats (if this is the first user message)
+      if (activeChat.messages.length === 2) { // Only AI greeting + options
+        try {
+          const title = await generateChatTitle(option)
+          const titledChats = finalChats.map((chat) =>
+            chat.id === activeChatId ? { ...chat, title } : chat
+          )
+          setChats(titledChats)
+        } catch (error) {
+          console.error('Error generating chat title:', error)
+        }
+      }
+    } catch (error) {
+      console.error('Error getting AI response:', error)
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "ai",
+        content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+        timestamp: new Date(),
+      }
+
+      const errorChats = updatedChats.map((chat) =>
+        chat.id === activeChatId
+          ? { ...chat, messages: [...chat.messages, errorMessage] }
+          : chat
+      )
+      setChats(errorChats)
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  // Show loading state while chats are being loaded
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full">
+        <TopNavbar
+          title=""
+          showNewButton={true}
+          onNewClick={createNewChat}
+          newButtonText="New Session"
+          onMenuClick={onMenuClick}
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Starting your private session...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -195,16 +345,29 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
         title=""
         showNewButton={true}
         onNewClick={createNewChat}
-        newButtonText="New Chat"
+        newButtonText="New Session"
         onMenuClick={onMenuClick}
       />
+
+      {/* Session Privacy Notice */}
+      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+        <div className="flex items-center justify-center">
+          <div className="flex items-center space-x-2 text-sm text-blue-800">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>
+              <strong>Private Session:</strong> Your conversations are temporary and will be cleared when you close this tab. 
+              Nothing is saved permanently for your privacy.
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Chat Tabs - Desktop optimized with better overflow handling */}
       {chats.length > 1 && (
         <div className="bg-gray-50 border-b border-gray-200 px-4 lg:px-6 py-3">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-700">Active Chats</h3>
-            <span className="text-xs text-gray-500">{chats.length} chats</span>
+            <h3 className="text-sm font-medium text-gray-700">Active Sessions</h3>
+            <span className="text-xs text-gray-500">{chats.length} sessions</span>
           </div>
           <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-2">
             {chats.map((chat, index) => (
@@ -250,7 +413,7 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-lg">{activeChat?.title}</h3>
-                <p className="text-sm text-gray-500">Online now</p>
+                <p className="text-sm text-gray-500">Private session - temporary</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
