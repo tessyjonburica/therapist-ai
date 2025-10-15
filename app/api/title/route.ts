@@ -35,14 +35,15 @@ export async function POST(request: Request) {
     )
 
     if (!response.ok) {
-      return NextResponse.json({ text: "New Session" })
+      const errorText = await response.text().catch(() => "")
+      return NextResponse.json({ text: "New Session", error: "Gemini API error", details: errorText })
     }
 
     const data = await response.json()
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "New Session"
     return NextResponse.json({ text })
   } catch (error) {
-    return NextResponse.json({ text: "New Session" })
+    return NextResponse.json({ text: "New Session", message: (error as Error)?.message })
   }
 }
 

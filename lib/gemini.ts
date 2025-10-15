@@ -23,11 +23,13 @@ export const callGemini = async (message: string, conversationHistory: Message[]
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, history: conversationHistory }),
   })
+  const data = await res.json().catch(() => ({} as any))
   if (!res.ok) {
-    const data = await res.json().catch(() => ({} as any))
-    throw new Error(data?.error || "Failed to get AI response")
+    // Surface server-provided details to help debugging
+    const details = data?.details || data?.message || data?.error || `HTTP ${res.status}`
+    throw new Error(typeof details === "string" ? details : JSON.stringify(details))
   }
-  const data = (await res.json()) as { text: string }
+  if (!data?.text) throw new Error("Empty response from AI")
   return data.text
 };
 
@@ -38,8 +40,8 @@ export const generateChatTitle = async (firstMessage: string): Promise<string> =
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ firstMessage }),
   })
+  const data = await res.json().catch(() => ({} as any))
   if (!res.ok) return "New Session"
-  const data = (await res.json()) as { text: string }
   return data.text || "New Session"
 };
 

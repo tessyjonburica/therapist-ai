@@ -48,22 +48,23 @@ export async function POST(request: Request) {
     )
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: `Gemini API error: ${response.status} - ${errorData?.error?.message || "Unknown error"}` },
-        { status: 502 },
-      )
+      const errorText = await response.text().catch(() => "")
+      return NextResponse.json({
+        error: "Gemini API error",
+        status: response.status,
+        details: errorText,
+      }, { status: 502 })
     }
 
     const data = await response.json()
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
     if (!text) {
-      return NextResponse.json({ error: "Invalid response format from Gemini API" }, { status: 502 })
+      return NextResponse.json({ error: "Invalid response format from Gemini API", raw: data }, { status: 502 })
     }
 
     return NextResponse.json({ text })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to get AI response" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to get AI response", message: (error as Error)?.message }, { status: 500 })
   }
 }
 
