@@ -349,18 +349,6 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
         onMenuClick={onMenuClick}
       />
 
-      {/* Session Privacy Notice */}
-      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <div className="flex items-center justify-center">
-          <div className="flex items-center space-x-2 text-sm text-blue-800">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span>
-              <strong>Private Session:</strong> Your conversations are temporary and will be cleared when you close this tab. 
-              Nothing is saved permanently for your privacy.
-            </span>
-          </div>
-        </div>
-      </div>
 
       {/* Chat Tabs - Desktop optimized with better overflow handling */}
       {chats.length > 1 && (
