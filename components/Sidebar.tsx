@@ -3,14 +3,16 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Heart, MessageCircle, Palette, Settings, Layers, X } from "lucide-react"
 
+type ViewType = "chat" | "frametext" | "profile" | "memory" | "themes"
+
 interface SidebarProps {
-  activeView: string
-  setActiveView: (view: string) => void
+  activeView: ViewType
+  setActiveView: (view: ViewType) => void
   isMobileOpen: boolean
   setIsMobileOpen: (open: boolean) => void
 }
 
-const menuItems = [
+const menuItems: { id: ViewType; icon: any; label: string }[] = [
   { id: "chat", icon: MessageCircle, label: "AI Therapist Chat" },
   { id: "frametext", icon: Palette, label: "FrameText Studio" },
   { id: "memory", icon: Layers, label: "Memory Lane" },
@@ -19,7 +21,7 @@ const menuItems = [
 ]
 
 export default function Sidebar({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }: SidebarProps) {
-  const handleMenuClick = (viewId: string) => {
+  const handleMenuClick = (viewId: ViewType) => {
     setActiveView(viewId)
     setIsMobileOpen(false) // Close mobile sidebar after selection
   }

@@ -1,7 +1,5 @@
 import { Message } from './storage';
 
-// Note: This file uses Google Gemini API
-
 export interface GeminiMessage {
   role: 'user' | 'model';
   parts: Array<{
@@ -33,7 +31,7 @@ export const callGemini = async (message: string, conversationHistory: Message[]
   return data.text
 };
 
-// Helper function to generate conversation titles
+
 export const generateChatTitle = async (firstMessage: string): Promise<string> => {
   const res = await fetch("/api/title", {
     method: "POST",

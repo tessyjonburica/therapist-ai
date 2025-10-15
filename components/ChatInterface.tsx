@@ -141,20 +141,20 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
   const closeChat = (chatId: string) => {
     if (chats.length === 1) {
       // Don't close the last chat, just clear its messages
-      const updatedChats = chats.map((chat) =>
-          chat.id === chatId
-            ? {
-                ...chat,
-                messages: [
-                  {
-                    id: "1",
-                    type: "ai",
-                    content: "Hello! I'm here to help you. How are you feeling today?",
-                    timestamp: new Date(),
-                  },
-                ],
-              }
-            : chat,
+      const updatedChats: Chat[] = chats.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: [
+                {
+                  id: "1",
+                  type: "ai" as const,
+                  content: "Hello! I'm here to help you. How are you feeling today?",
+                  timestamp: new Date(),
+                },
+              ],
+            }
+          : chat,
       )
       setChats(updatedChats)
       return
