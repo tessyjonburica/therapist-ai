@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatMessage from "./ChatMessage"
 import TopNavbar from "./TopNavbar"
-import { callGemini, generateChatTitle } from "@/lib/openai"
+import { callGemini, generateChatTitle } from "@/lib/gemini"
 import { saveChatsToStorage, loadChatsFromStorage, saveSingleChat, deleteChatFromStorage, Message, Chat } from "@/lib/storage"
 
 interface ChatInterfaceProps {
@@ -482,7 +482,12 @@ export default function ChatInterface({ onMenuClick }: ChatInterfaceProps) {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="How are you feeling today?"
               className="pr-12 rounded-full border-gray-300 focus:border-pink-500 focus:ring-pink-500 text-base lg:text-sm"
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
             />
           </div>
           <Button
